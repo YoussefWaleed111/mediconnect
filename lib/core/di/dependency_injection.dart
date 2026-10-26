@@ -9,6 +9,12 @@ import 'package:mediconnect/features/auth/data/repositories/auth_repository_impl
 import 'package:mediconnect/features/auth/domain/repositories/auth_repository.dart';
 import 'package:mediconnect/features/auth/domain/usecases/login_usecase.dart';
 import 'package:mediconnect/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:mediconnect/features/onboarding/data/datasources/onboarding_local_data_source.dart';
+import 'package:mediconnect/features/onboarding/data/repositories/onboarding_repository_impl.dart';
+import 'package:mediconnect/features/onboarding/domain/repositories/onboarding_repository.dart';
+import 'package:mediconnect/features/onboarding/domain/usecases/get_onboarding_completed_usecase.dart';
+import 'package:mediconnect/features/onboarding/domain/usecases/set_onboarding_completed_usecase.dart';
+import 'package:mediconnect/features/onboarding/presentation/cubit/onboarding_cubit.dart';
 
 final GetIt getIt = GetIt.instance;
 
@@ -43,5 +49,28 @@ Future<void> setupGetIt() async {
   // Auth: Bloc
   getIt.registerFactory<AuthBloc>(
     () => AuthBloc(loginUseCase: getIt<LoginUseCase>()),
+  );
+
+  // Onboarding: Data Sources & Repository
+  getIt.registerLazySingleton<OnboardingLocalDataSource>(
+    () => OnboardingLocalDataSourceImpl(),
+  );
+  getIt.registerLazySingleton<OnboardingRepository>(
+    () => OnboardingRepositoryImpl(getIt<OnboardingLocalDataSource>()),
+  );
+
+  // Onboarding: Use Cases
+  getIt.registerLazySingleton<GetOnboardingCompletedUseCase>(
+    () => GetOnboardingCompletedUseCase(getIt<OnboardingRepository>()),
+  );
+  getIt.registerLazySingleton<SetOnboardingCompletedUseCase>(
+    () => SetOnboardingCompletedUseCase(getIt<OnboardingRepository>()),
+  );
+
+  // Onboarding: Cubit
+  getIt.registerFactory<OnboardingCubit>(
+    () => OnboardingCubit(
+      setOnboardingCompletedUseCase: getIt<SetOnboardingCompletedUseCase>(),
+    ),
   );
 }
